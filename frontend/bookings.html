@@ -1,0 +1,236 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Bookings – Turf-Ballers</title>
+  <meta name="description" content="Manage turf bookings – create, view and cancel slot bookings with double-booking prevention."/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">⚽</div><div><h1>Turf-Ballers</h1><p>Management System</p></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <a class="nav-item" href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="members.html"><span class="nav-icon">👥</span> Members</a>
+      <a class="nav-item" href="bookings.html"><span class="nav-icon">📅</span> Bookings</a>
+      <a class="nav-item" href="payments.html"><span class="nav-icon">💳</span> Payments</a>
+      <a class="nav-item" href="attendance.html"><span class="nav-icon">✅</span> Attendance</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="avatar" id="sidebarAvatar">A</div><div class="user-info"><div class="name" id="sidebarUserName">Admin</div><div class="role" id="sidebarUserRole">Administrator</div></div></div>
+      <button class="btn btn-secondary btn-sm w-full mt-16" id="logoutBtn" style="justify-content:center">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left"><h2>Bookings</h2><p id="bookingCount">Loading...</p></div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" id="addBookingBtn">➕ New Booking</button>
+        <button class="btn btn-icon btn-secondary" id="menuToggle">☰</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="table-toolbar">
+        <div class="input-group"><span class="input-icon">🔍</span><input class="form-control" type="text" id="searchInput" placeholder="Search member or turf…"/></div>
+        <div class="filter-group">
+          <input class="form-control" type="date" id="dateFilter" style="min-width:160px"/>
+          <select class="form-control" id="statusFilter" style="min-width:140px">
+            <option value="">All Status</option>
+            <option value="CONFIRMED">Confirmed</option>
+            <option value="PENDING">Pending</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container card">
+        <table>
+          <thead><tr><th>#</th><th>Member</th><th>Turf</th><th>Date</th><th>Time Slot</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="bookingsBody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+</div>
+
+<!-- BOOKING MODAL -->
+<div class="modal-overlay" id="bookingModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">New Booking</h3>
+      <button class="modal-close" onclick="closeModal('bookingModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="bookingForm">
+        <input type="hidden" id="bookingId"/>
+        <div class="form-group"><label class="form-label">Member *</label>
+          <select class="form-control" id="bMember" required><option value="">Select member…</option></select>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Turf / Facility *</label>
+            <select class="form-control" id="bTurf" required>
+              <option value="">Select turf…</option>
+              <option value="Football 7v7">⚽ Football 7v7</option>
+              <option value="Football 5v5">⚽ Football 5v5</option>
+              <option value="Cricket Box">🏏 Cricket Box</option>
+              <option value="Pickleball Court">🏸 Pickleball Court</option>
+              <option value="Basketball Court">🏀 Basketball Court</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Booking Date *</label>
+            <input class="form-control" type="date" id="bDate" required/>
+          </div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Start Time *</label><input class="form-control" type="time" id="bStart" required/></div>
+          <div class="form-group"><label class="form-label">End Time *</label><input class="form-control" type="time" id="bEnd" required/></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Amount (₹) *</label><input class="form-control" type="number" id="bAmount" required min="0" placeholder="800"/></div>
+          <div class="form-group"><label class="form-label">Status</label>
+            <select class="form-control" id="bStatus">
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="PENDING">Pending</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><input class="form-control" id="bNotes" placeholder="Optional notes…"/></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('bookingModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveBookingBtn">💾 Save Booking</button>
+    </div>
+  </div>
+</div>
+
+<!-- CANCEL CONFIRM -->
+<div class="modal-overlay" id="cancelModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><h3>Cancel Booking</h3><button class="modal-close" onclick="closeModal('cancelModal')">✕</button></div>
+    <div class="modal-body"><p>Cancel this booking for <strong id="cancelLabel"></strong>?</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('cancelModal')">No</button>
+      <button class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+if (!Auth.requireAuth()) {}
+initSidebar();
+
+let currentPage = 0, totalPages = 0, cancelId = null;
+let allMembers = [];
+
+async function loadMembers() {
+  try {
+    const data = await API.members.getAll({ status: 'ACTIVE', size: 200 });
+    allMembers = data.content || data || [];
+    const sel = document.getElementById('bMember');
+    sel.innerHTML = '<option value="">Select member…</option>' +
+      allMembers.map(m => `<option value="${m.id}">${m.fullName} (${m.phone || m.email})</option>`).join('');
+  } catch(e) {}
+}
+
+async function loadBookings() {
+  const search = document.getElementById('searchInput').value.trim();
+  const date   = document.getElementById('dateFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const params = { page: currentPage, size: 10 };
+  if (search) params.search = search;
+  if (date)   params.date   = date;
+  if (status) params.status = status;
+
+  try {
+    const data = await API.bookings.getAll(params);
+    const bookings = data.content || data || [];
+    totalPages = data.totalPages || 1;
+    document.getElementById('bookingCount').textContent = `${data.totalElements || bookings.length} bookings total`;
+
+    const tbody = document.getElementById('bookingsBody');
+    if (!bookings.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">No bookings found</td></tr>';
+    } else {
+      tbody.innerHTML = bookings.map((b, i) => `
+        <tr>
+          <td class="text-muted">${currentPage * 10 + i + 1}</td>
+          <td><span class="fw-600">${b.memberName || '—'}</span></td>
+          <td>⚽ ${b.turfName || '—'}</td>
+          <td>${formatDate(b.bookingDate)}</td>
+          <td class="text-muted">${formatTime(b.startTime)} – ${formatTime(b.endTime)}</td>
+          <td class="text-accent fw-600">${formatCurrency(b.amount)}</td>
+          <td>${statusBadge(b.status)}</td>
+          <td>
+            <div class="flex flex-gap-8">
+              ${b.status !== 'CANCELLED' ? `<button class="btn btn-danger btn-sm" onclick="cancelBooking(${b.id},'${(b.memberName||'').replace(/'/g,"\\'")}')">✖ Cancel</button>` : ''}
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+    renderPagination(document.getElementById('pagination'), currentPage, totalPages, p => { currentPage = p; loadBookings(); });
+  } catch(e) { Toast.error('Failed to load bookings: ' + e.message); }
+}
+
+document.getElementById('addBookingBtn').addEventListener('click', () => {
+  document.getElementById('modalTitle').textContent = 'New Booking';
+  document.getElementById('bookingForm').reset();
+  document.getElementById('bookingId').value = '';
+  document.getElementById('bDate').value = new Date().toISOString().split('T')[0];
+  openModal('bookingModal');
+});
+
+document.getElementById('saveBookingBtn').addEventListener('click', async () => {
+  const id = document.getElementById('bookingId').value;
+  const payload = {
+    memberId:    document.getElementById('bMember').value,
+    turfName:    document.getElementById('bTurf').value,
+    bookingDate: document.getElementById('bDate').value,
+    startTime:   document.getElementById('bStart').value,
+    endTime:     document.getElementById('bEnd').value,
+    amount:      document.getElementById('bAmount').value,
+    status:      document.getElementById('bStatus').value,
+    notes:       document.getElementById('bNotes').value.trim(),
+  };
+  if (!payload.memberId || !payload.turfName || !payload.bookingDate || !payload.startTime || !payload.endTime) {
+    Toast.warning('Please fill all required fields.'); return;
+  }
+  try {
+    if (id) { await API.bookings.update(id, payload); Toast.success('Booking updated!'); }
+    else    { await API.bookings.create(payload);      Toast.success('Booking created!'); }
+    closeModal('bookingModal');
+    loadBookings();
+  } catch(e) { Toast.error(e.message); }
+});
+
+function cancelBooking(id, name) {
+  cancelId = id;
+  document.getElementById('cancelLabel').textContent = name;
+  openModal('cancelModal');
+}
+document.getElementById('confirmCancelBtn').addEventListener('click', async () => {
+  try {
+    await API.bookings.cancel(cancelId);
+    Toast.success('Booking cancelled.');
+    closeModal('cancelModal');
+    loadBookings();
+  } catch(e) { Toast.error(e.message); }
+});
+
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(() => { currentPage=0; loadBookings(); }, 400); });
+document.getElementById('dateFilter').addEventListener('change', () => { currentPage=0; loadBookings(); });
+document.getElementById('statusFilter').addEventListener('change', () => { currentPage=0; loadBookings(); });
+
+loadMembers();
+loadBookings();
+</script>
+</body>
+</html>

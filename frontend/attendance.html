@@ -1,0 +1,193 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Attendance – Turf-Ballers</title>
+  <meta name="description" content="Track daily member attendance at Turf-Ballers sports complex."/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">⚽</div><div><h1>Turf-Ballers</h1><p>Management System</p></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <a class="nav-item" href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="members.html"><span class="nav-icon">👥</span> Members</a>
+      <a class="nav-item" href="bookings.html"><span class="nav-icon">📅</span> Bookings</a>
+      <a class="nav-item" href="payments.html"><span class="nav-icon">💳</span> Payments</a>
+      <a class="nav-item" href="attendance.html"><span class="nav-icon">✅</span> Attendance</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="avatar" id="sidebarAvatar">A</div><div class="user-info"><div class="name" id="sidebarUserName">Admin</div><div class="role" id="sidebarUserRole">Administrator</div></div></div>
+      <button class="btn btn-secondary btn-sm w-full mt-16" id="logoutBtn" style="justify-content:center">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left"><h2>Attendance</h2><p id="attendanceSummary">Loading...</p></div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" id="markAttendanceBtn">✅ Mark Attendance</button>
+        <button class="btn btn-icon btn-secondary" id="menuToggle">☰</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <!-- Summary -->
+      <div class="stats-grid mb-24" style="grid-template-columns:repeat(3,1fr)">
+        <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-info"><div class="stat-label">Present Today</div><div class="stat-value" id="presentToday">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon red">❌</div><div class="stat-info"><div class="stat-label">Absent Today</div><div class="stat-value" id="absentToday">—</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">📊</div><div class="stat-info"><div class="stat-label">Attendance Rate</div><div class="stat-value" id="attendanceRate">—</div></div></div>
+      </div>
+
+      <div class="table-toolbar">
+        <div class="input-group"><span class="input-icon">🔍</span><input class="form-control" type="text" id="searchInput" placeholder="Search member…"/></div>
+        <div class="filter-group">
+          <input class="form-control" type="date" id="dateFilter" style="min-width:160px"/>
+          <select class="form-control" id="statusFilter" style="min-width:140px">
+            <option value="">All Status</option>
+            <option value="PRESENT">Present</option>
+            <option value="ABSENT">Absent</option>
+            <option value="LATE">Late</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container card">
+        <table>
+          <thead><tr><th>#</th><th>Member</th><th>Date</th><th>Status</th><th>Notes</th></tr></thead>
+          <tbody id="attendanceBody"><tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">Loading…</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MARK ATTENDANCE MODAL -->
+<div class="modal-overlay" id="attendanceModal">
+  <div class="modal">
+    <div class="modal-header"><h3>Mark Attendance</h3><button class="modal-close" onclick="closeModal('attendanceModal')">✕</button></div>
+    <div class="modal-body">
+      <form id="attendanceForm">
+        <div class="form-group"><label class="form-label">Member *</label>
+          <select class="form-control" id="aMember" required><option value="">Select member…</option></select>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Date *</label><input class="form-control" type="date" id="aDate" required/></div>
+          <div class="form-group"><label class="form-label">Status *</label>
+            <select class="form-control" id="aStatus" required>
+              <option value="PRESENT">✅ Present</option>
+              <option value="ABSENT">❌ Absent</option>
+              <option value="LATE">⏰ Late</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><input class="form-control" id="aNotes" placeholder="Optional notes…"/></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('attendanceModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveAttendanceBtn">✅ Mark</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+if (!Auth.requireAuth()) {}
+initSidebar();
+
+let allAttendance = [];
+const today = new Date().toISOString().split('T')[0];
+
+async function loadMembersIntoSelect() {
+  try {
+    const data = await API.members.getAll({ status: 'ACTIVE', size: 200 });
+    const members = data.content || data || [];
+    const sel = document.getElementById('aMember');
+    sel.innerHTML = '<option value="">Select member…</option>' +
+      members.map(m => `<option value="${m.id}">${m.fullName}</option>`).join('');
+  } catch(e) {}
+}
+
+async function loadAttendance() {
+  const search = document.getElementById('searchInput').value.toLowerCase();
+  const date   = document.getElementById('dateFilter').value;
+  const status = document.getElementById('statusFilter').value;
+  const params = {};
+  if (date) params.date = date;
+
+  try {
+    const data = await API.attendance.getAll(params);
+    allAttendance = data.content || data || [];
+
+    // Filter locally
+    let filtered = allAttendance.filter(a => {
+      const matchSearch = !search || (a.memberName||'').toLowerCase().includes(search);
+      const matchStatus = !status || a.status === status;
+      return matchSearch && matchStatus;
+    });
+
+    // Summary for today
+    const todayRecords = allAttendance.filter(a => a.date === today);
+    const present = todayRecords.filter(a => a.status === 'PRESENT').length;
+    const absent  = todayRecords.filter(a => a.status === 'ABSENT').length;
+    const total   = todayRecords.length;
+    document.getElementById('presentToday').textContent = present;
+    document.getElementById('absentToday').textContent  = absent;
+    document.getElementById('attendanceRate').textContent = total ? Math.round(present/total*100)+'%' : '—';
+    document.getElementById('attendanceSummary').textContent = `${allAttendance.length} records total`;
+
+    const tbody = document.getElementById('attendanceBody');
+    if (!filtered.length) {
+      tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">No attendance records found</td></tr>';
+    } else {
+      tbody.innerHTML = filtered.map((a, i) => `
+        <tr>
+          <td class="text-muted">${i+1}</td>
+          <td><span class="fw-600">${a.memberName || '—'}</span></td>
+          <td>${formatDate(a.date)}</td>
+          <td>${statusBadge(a.status)}</td>
+          <td class="text-muted text-sm">${a.notes || '—'}</td>
+        </tr>`).join('');
+    }
+  } catch(e) { Toast.error('Failed to load attendance: ' + e.message); }
+}
+
+document.getElementById('markAttendanceBtn').addEventListener('click', () => {
+  document.getElementById('attendanceForm').reset();
+  document.getElementById('aDate').value = today;
+  openModal('attendanceModal');
+});
+
+document.getElementById('saveAttendanceBtn').addEventListener('click', async () => {
+  const payload = {
+    memberId: document.getElementById('aMember').value,
+    date:     document.getElementById('aDate').value,
+    status:   document.getElementById('aStatus').value,
+    notes:    document.getElementById('aNotes').value.trim() || null,
+  };
+  if (!payload.memberId || !payload.date) { Toast.warning('Member and date are required.'); return; }
+  try {
+    await API.attendance.mark(payload);
+    Toast.success('Attendance marked!');
+    closeModal('attendanceModal');
+    loadAttendance();
+  } catch(e) { Toast.error(e.message); }
+});
+
+let searchTimeout;
+document.getElementById('searchInput').addEventListener('input', () => { clearTimeout(searchTimeout); searchTimeout = setTimeout(loadAttendance, 350); });
+document.getElementById('dateFilter').addEventListener('change', loadAttendance);
+document.getElementById('statusFilter').addEventListener('change', loadAttendance);
+
+// Set default date filter to today
+document.getElementById('dateFilter').value = today;
+
+loadMembersIntoSelect();
+loadAttendance();
+</script>
+</body>
+</html>

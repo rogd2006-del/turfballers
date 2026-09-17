@@ -1,0 +1,242 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Members – Turf-Ballers</title>
+  <meta name="description" content="Manage sports turf members – add, edit, search and track membership plans."/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<div class="app-layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo"><div class="logo-icon">⚽</div><div><h1>Turf-Ballers</h1><p>Management System</p></div></div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <a class="nav-item" href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="members.html"><span class="nav-icon">👥</span> Members</a>
+      <a class="nav-item" href="bookings.html"><span class="nav-icon">📅</span> Bookings</a>
+      <a class="nav-item" href="payments.html"><span class="nav-icon">💳</span> Payments</a>
+      <a class="nav-item" href="attendance.html"><span class="nav-icon">✅</span> Attendance</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user"><div class="avatar" id="sidebarAvatar">A</div><div class="user-info"><div class="name" id="sidebarUserName">Admin</div><div class="role" id="sidebarUserRole">Administrator</div></div></div>
+      <button class="btn btn-secondary btn-sm w-full mt-16" id="logoutBtn" style="justify-content:center">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left"><h2>Members</h2><p id="memberCount">Loading...</p></div>
+      <div class="topbar-right">
+        <button class="btn btn-primary" id="addMemberBtn">➕ Add Member</button>
+        <button class="btn btn-icon btn-secondary" id="menuToggle">☰</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <div class="table-toolbar">
+        <div class="input-group"><span class="input-icon">🔍</span><input class="form-control" type="text" id="searchInput" placeholder="Search by name, email or phone…"/></div>
+        <div class="filter-group">
+          <select class="form-control" id="statusFilter" style="min-width:130px">
+            <option value="">All Status</option>
+            <option value="ACTIVE">Active</option>
+            <option value="INACTIVE">Inactive</option>
+          </select>
+          <select class="form-control" id="planFilter" style="min-width:130px">
+            <option value="">All Plans</option>
+            <option value="BASIC">Basic</option>
+            <option value="STANDARD">Standard</option>
+            <option value="VIP">VIP</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="table-container card">
+        <table>
+          <thead><tr><th>#</th><th>Name</th><th>Email</th><th>Phone</th><th>Plan</th><th>Joined</th><th>Status</th><th>Actions</th></tr></thead>
+          <tbody id="membersBody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">Loading members…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="pagination" id="pagination"></div>
+    </div>
+  </main>
+</div>
+
+<!-- ADD / EDIT MODAL -->
+<div class="modal-overlay" id="memberModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle">Add Member</h3>
+      <button class="modal-close" onclick="closeModal('memberModal')">✕</button>
+    </div>
+    <div class="modal-body">
+      <form id="memberForm">
+        <input type="hidden" id="memberId"/>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Full Name *</label><input class="form-control" id="mFullName" required placeholder="Arjun Sharma"/></div>
+          <div class="form-group"><label class="form-label">Email *</label><input class="form-control" type="email" id="mEmail" required placeholder="arjun@example.com"/></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Phone *</label><input class="form-control" id="mPhone" required placeholder="+91-9876543210"/></div>
+          <div class="form-group"><label class="form-label">Join Date</label><input class="form-control" type="date" id="mJoinDate"/></div>
+        </div>
+        <div class="grid-2">
+          <div class="form-group"><label class="form-label">Membership Plan</label>
+            <select class="form-control" id="mPlan">
+              <option value="BASIC">Basic</option>
+              <option value="STANDARD">Standard</option>
+              <option value="VIP">VIP</option>
+            </select>
+          </div>
+          <div class="form-group"><label class="form-label">Status</label>
+            <select class="form-control" id="mStatus">
+              <option value="ACTIVE">Active</option>
+              <option value="INACTIVE">Inactive</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group"><label class="form-label">Notes</label><input class="form-control" id="mNotes" placeholder="Optional notes…"/></div>
+      </form>
+    </div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('memberModal')">Cancel</button>
+      <button class="btn btn-primary" id="saveMemberBtn">💾 Save Member</button>
+    </div>
+  </div>
+</div>
+
+<!-- DELETE CONFIRM MODAL -->
+<div class="modal-overlay" id="deleteModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-header"><h3>Delete Member</h3><button class="modal-close" onclick="closeModal('deleteModal')">✕</button></div>
+    <div class="modal-body"><p>Are you sure you want to delete <strong id="deleteNameLabel"></strong>? This action cannot be undone.</p></div>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('deleteModal')">Cancel</button>
+      <button class="btn btn-danger" id="confirmDeleteBtn">🗑️ Delete</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+if (!Auth.requireAuth()) {}
+initSidebar();
+
+let currentPage = 0, totalPages = 0, deleteId = null;
+let searchTimeout = null;
+
+async function loadMembers() {
+  const search = document.getElementById('searchInput').value.trim();
+  const status = document.getElementById('statusFilter').value;
+  const plan   = document.getElementById('planFilter').value;
+  const params = { page: currentPage, size: 10 };
+  if (search) params.search = search;
+  if (status) params.status = status;
+  if (plan)   params.plan   = plan;
+
+  try {
+    const data = await API.members.getAll(params);
+    const members = data.content || data || [];
+    totalPages = data.totalPages || 1;
+    document.getElementById('memberCount').textContent = `${data.totalElements || members.length} members total`;
+
+    const tbody = document.getElementById('membersBody');
+    if (!members.length) {
+      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">No members found</td></tr>';
+    } else {
+      tbody.innerHTML = members.map((m, i) => `
+        <tr>
+          <td class="text-muted">${currentPage * 10 + i + 1}</td>
+          <td><span class="fw-600">${m.fullName}</span></td>
+          <td class="text-muted">${m.email}</td>
+          <td>${m.phone || '—'}</td>
+          <td>${planBadge(m.membershipPlan)}</td>
+          <td>${formatDate(m.joinDate)}</td>
+          <td>${statusBadge(m.status)}</td>
+          <td>
+            <div class="flex flex-gap-8">
+              <button class="btn btn-secondary btn-sm" onclick="editMember(${m.id})">✏️</button>
+              <button class="btn btn-danger btn-sm" onclick="confirmDelete(${m.id}, '${m.fullName.replace(/'/g,"\\'")}')">🗑️</button>
+            </div>
+          </td>
+        </tr>`).join('');
+    }
+    renderPagination(document.getElementById('pagination'), currentPage, totalPages, p => { currentPage = p; loadMembers(); });
+  } catch(e) { Toast.error('Failed to load members: ' + e.message); }
+}
+
+// Add member
+document.getElementById('addMemberBtn').addEventListener('click', () => {
+  document.getElementById('modalTitle').textContent = 'Add Member';
+  document.getElementById('memberForm').reset();
+  document.getElementById('memberId').value = '';
+  document.getElementById('mJoinDate').value = new Date().toISOString().split('T')[0];
+  openModal('memberModal');
+});
+
+// Edit member
+async function editMember(id) {
+  try {
+    const m = await API.members.getById(id);
+    document.getElementById('modalTitle').textContent = 'Edit Member';
+    document.getElementById('memberId').value = m.id;
+    document.getElementById('mFullName').value = m.fullName;
+    document.getElementById('mEmail').value = m.email;
+    document.getElementById('mPhone').value = m.phone || '';
+    document.getElementById('mJoinDate').value = m.joinDate || '';
+    document.getElementById('mPlan').value = m.membershipPlan || 'BASIC';
+    document.getElementById('mStatus').value = m.status || 'ACTIVE';
+    document.getElementById('mNotes').value = m.notes || '';
+    openModal('memberModal');
+  } catch(e) { Toast.error('Could not load member: ' + e.message); }
+}
+
+// Save
+document.getElementById('saveMemberBtn').addEventListener('click', async () => {
+  const id = document.getElementById('memberId').value;
+  const payload = {
+    fullName: document.getElementById('mFullName').value.trim(),
+    email:    document.getElementById('mEmail').value.trim(),
+    phone:    document.getElementById('mPhone').value.trim(),
+    joinDate: document.getElementById('mJoinDate').value,
+    membershipPlan: document.getElementById('mPlan').value,
+    status:   document.getElementById('mStatus').value,
+    notes:    document.getElementById('mNotes').value.trim(),
+  };
+  if (!payload.fullName || !payload.email) { Toast.warning('Name and email are required.'); return; }
+  try {
+    if (id) { await API.members.update(id, payload); Toast.success('Member updated!'); }
+    else     { await API.members.create(payload);     Toast.success('Member added!'); }
+    closeModal('memberModal');
+    loadMembers();
+  } catch(e) { Toast.error(e.message); }
+});
+
+// Delete
+function confirmDelete(id, name) {
+  deleteId = id;
+  document.getElementById('deleteNameLabel').textContent = name;
+  openModal('deleteModal');
+}
+document.getElementById('confirmDeleteBtn').addEventListener('click', async () => {
+  try {
+    await API.members.delete(deleteId);
+    Toast.success('Member deleted.');
+    closeModal('deleteModal');
+    loadMembers();
+  } catch(e) { Toast.error(e.message); }
+});
+
+// Search with debounce
+document.getElementById('searchInput').addEventListener('input', () => {
+  clearTimeout(searchTimeout);
+  searchTimeout = setTimeout(() => { currentPage = 0; loadMembers(); }, 400);
+});
+document.getElementById('statusFilter').addEventListener('change', () => { currentPage = 0; loadMembers(); });
+document.getElementById('planFilter').addEventListener('change', () => { currentPage = 0; loadMembers(); });
+
+loadMembers();
+</script>
+</body>
+</html>

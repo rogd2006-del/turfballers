@@ -1,0 +1,164 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard – Turf-Ballers</title>
+  <meta name="description" content="Turf-Ballers admin dashboard – live stats, bookings, revenue and attendance overview."/>
+  <link rel="stylesheet" href="css/styles.css"/>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+</head>
+<body>
+<div class="app-layout">
+  <!-- SIDEBAR -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo">
+      <div class="logo-icon">⚽</div>
+      <div><h1>Turf-Ballers</h1><p>Management System</p></div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-title">Main</div>
+      <a class="nav-item" href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
+      <a class="nav-item" href="members.html"><span class="nav-icon">👥</span> Members</a>
+      <a class="nav-item" href="bookings.html"><span class="nav-icon">📅</span> Bookings</a>
+      <a class="nav-item" href="payments.html"><span class="nav-icon">💳</span> Payments</a>
+      <a class="nav-item" href="attendance.html"><span class="nav-icon">✅</span> Attendance</a>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="avatar" id="sidebarAvatar">A</div>
+        <div class="user-info">
+          <div class="name" id="sidebarUserName">Admin</div>
+          <div class="role" id="sidebarUserRole">Administrator</div>
+        </div>
+      </div>
+      <button class="btn btn-secondary btn-sm w-full mt-16" id="logoutBtn" style="justify-content:center">🚪 Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <main class="main-content">
+    <header class="topbar">
+      <div class="topbar-left">
+        <h2>Dashboard</h2>
+        <p id="topbarDate">Loading...</p>
+      </div>
+      <div class="topbar-right">
+        <button class="btn btn-primary btn-sm" onclick="window.location.href='bookings.html'">➕ New Booking</button>
+        <button class="btn btn-icon btn-secondary" id="menuToggle">☰</button>
+      </div>
+    </header>
+
+    <div class="page-body">
+      <!-- KPI Cards -->
+      <div class="stats-grid" id="statsGrid">
+        <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-info"><div class="stat-label">Total Members</div><div class="stat-value" id="statMembers">—</div><div class="stat-sub" id="statMembersActive">— active</div></div></div>
+        <div class="stat-card"><div class="stat-icon blue">📅</div><div class="stat-info"><div class="stat-label">Today's Bookings</div><div class="stat-value" id="statTodayBookings">—</div><div class="stat-sub" id="statPendingBookings">— pending</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange">💰</div><div class="stat-info"><div class="stat-label">Monthly Revenue</div><div class="stat-value" id="statRevenue">—</div><div class="stat-sub up" id="statRevenueGrowth">↑ this month</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple">✅</div><div class="stat-info"><div class="stat-label">Attendance Rate</div><div class="stat-value" id="statAttendance">—</div><div class="stat-sub" id="statAttendanceSub">today</div></div></div>
+        <div class="stat-card"><div class="stat-icon red">⚠️</div><div class="stat-info"><div class="stat-label">Pending Payments</div><div class="stat-value" id="statPendingPay">—</div><div class="stat-sub">needs collection</div></div></div>
+        <div class="stat-card"><div class="stat-icon teal">📈</div><div class="stat-info"><div class="stat-label">Total Bookings</div><div class="stat-value" id="statTotalBookings">—</div><div class="stat-sub">all time</div></div></div>
+      </div>
+
+      <!-- Charts -->
+      <div class="charts-grid">
+        <div class="chart-card">
+          <h3>📈 Revenue Trend (Last 7 Days)</h3>
+          <canvas id="revenueChart"></canvas>
+        </div>
+        <div class="chart-card">
+          <h3>🏅 Membership Breakdown</h3>
+          <canvas id="membershipChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Recent Bookings -->
+      <div class="card mb-24">
+        <div class="card-header">
+          <h3>📅 Recent Bookings</h3>
+          <a class="btn btn-secondary btn-sm" href="bookings.html">View All →</a>
+        </div>
+        <div class="table-container">
+          <table>
+            <thead><tr><th>Member</th><th>Turf</th><th>Date</th><th>Time</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="recentBookingsBody"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+if (!Auth.requireAuth()) { /* redirected */ }
+initSidebar();
+
+// Date
+document.getElementById('topbarDate').textContent = new Date().toLocaleDateString('en-IN', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
+
+async function loadDashboard() {
+  try {
+    const stats = await API.dashboard.getStats();
+
+    document.getElementById('statMembers').textContent = stats.totalMembers ?? 0;
+    document.getElementById('statMembersActive').textContent = `${stats.activeMembers ?? 0} active`;
+    document.getElementById('statTodayBookings').textContent = stats.todayBookings ?? 0;
+    document.getElementById('statPendingBookings').textContent = `${stats.pendingBookings ?? 0} pending`;
+    document.getElementById('statRevenue').textContent = formatCurrency(stats.monthlyRevenue);
+    document.getElementById('statPendingPay').textContent = stats.pendingPayments ?? 0;
+    document.getElementById('statAttendance').textContent = (stats.attendanceRate ?? 0) + '%';
+    document.getElementById('statTotalBookings').textContent = stats.totalBookings ?? 0;
+
+    // Revenue chart
+    const revLabels = (stats.revenueTrend || []).map(r => r.date || r[0]);
+    const revData   = (stats.revenueTrend || []).map(r => r.amount || r[1]);
+    new Chart(document.getElementById('revenueChart'), {
+      type: 'line',
+      data: {
+        labels: revLabels.length ? revLabels : ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],
+        datasets: [{
+          label: 'Revenue (₹)',
+          data: revData.length ? revData : [0,0,0,0,0,0,0],
+          borderColor: '#10b981',
+          backgroundColor: 'rgba(16,185,129,0.08)',
+          tension: 0.4, fill: true, pointBackgroundColor: '#10b981', pointRadius: 5
+        }]
+      },
+      options: { responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' }}}, scales:{ x:{ ticks:{ color:'#64748b' }, grid:{ color:'rgba(255,255,255,0.04)' }}, y:{ ticks:{ color:'#64748b', callback: v => '₹'+v }, grid:{ color:'rgba(255,255,255,0.04)' }}}}
+    });
+
+    // Membership donut
+    const mp = stats.membershipBreakdown || { BASIC:0, STANDARD:0, VIP:0 };
+    new Chart(document.getElementById('membershipChart'), {
+      type: 'doughnut',
+      data: {
+        labels: ['Basic','Standard','VIP'],
+        datasets: [{ data: [mp.BASIC||0, mp.STANDARD||0, mp.VIP||0], backgroundColor: ['#64748b','#3b82f6','#8b5cf6'], borderColor:'transparent', hoverOffset:8 }]
+      },
+      options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ color:'#94a3b8', padding:16 }}}}
+    });
+
+    // Recent bookings
+    const bookings = await API.bookings.getAll({ size: 5, sort: 'bookingDate,desc' });
+    const rows = (bookings.content || bookings || []).slice(0,5);
+    const tbody = document.getElementById('recentBookingsBody');
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">No bookings yet</td></tr>'; return; }
+    tbody.innerHTML = rows.map(b => `
+      <tr>
+        <td><span class="fw-600">${b.memberName || '—'}</span></td>
+        <td>⚽ ${b.turfName || '—'}</td>
+        <td>${formatDate(b.bookingDate)}</td>
+        <td>${formatTime(b.startTime)} – ${formatTime(b.endTime)}</td>
+        <td class="text-accent fw-600">${formatCurrency(b.amount)}</td>
+        <td>${statusBadge(b.status)}</td>
+      </tr>`).join('');
+  } catch(e) {
+    Toast.error('Failed to load dashboard: ' + e.message);
+  }
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
