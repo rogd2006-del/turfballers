@@ -1,0 +1,126 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login – Turf-Ballers</title>
+  <meta name="description" content="Login to Turf-Ballers sports turf booking and management system."/>
+  <link rel="stylesheet" href="css/styles.css"/>
+</head>
+<body>
+<div class="login-page">
+  <div class="login-bg"></div>
+  <div class="login-grid-pattern"></div>
+  <div class="login-container">
+    <!-- Left branding panel -->
+    <div class="login-left">
+      <div class="brand-icon">⚽</div>
+      <h1>Turf-Ballers</h1>
+      <p>Complete sports turf booking and facility management system for modern sports complexes.</p>
+      <div class="feature-pills">
+        <span class="feature-pill">📅 Smart Booking</span>
+        <span class="feature-pill">👥 Member Management</span>
+        <span class="feature-pill">💳 Payment Tracking</span>
+        <span class="feature-pill">📊 Analytics</span>
+        <span class="feature-pill">✅ Attendance</span>
+        <span class="feature-pill">🚫 No Double Booking</span>
+      </div>
+    </div>
+
+    <!-- Right login form -->
+    <div class="login-right">
+      <div class="login-card">
+        <h2>Welcome back 👋</h2>
+        <p class="subtitle">Sign in to access your admin dashboard</p>
+
+        <div class="demo-creds">
+          <div class="label">🔑 Demo Credentials (Click to fill)</div>
+          <div>Email: <span id="fillEmail">admin@turfballers.com</span></div>
+          <div>Password: <span id="fillPass">Admin@123</span></div>
+        </div>
+
+        <div class="login-error" id="loginError"></div>
+
+        <form id="loginForm">
+          <div class="form-group">
+            <label class="form-label" for="emailInput">Email Address</label>
+            <div class="input-group">
+              <span class="input-icon">📧</span>
+              <input class="form-control" type="email" id="emailInput"
+                     placeholder="admin@turfballers.com" required autocomplete="email"/>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label" for="passwordInput">Password</label>
+            <div class="password-input">
+              <input class="form-control" type="password" id="passwordInput"
+                     placeholder="Enter your password" required autocomplete="current-password"/>
+              <button type="button" class="password-toggle" id="togglePass">👁️</button>
+            </div>
+          </div>
+
+          <button type="submit" class="login-btn" id="loginBtn">
+            <span id="loginBtnText">Sign In</span>
+          </button>
+        </form>
+
+        <p class="mt-16 text-muted text-sm" style="text-align:center">
+          Turf-Ballers v1.0 &nbsp;|&nbsp; Sports Management Platform
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="js/api.js"></script>
+<script>
+  // Redirect if already logged in
+  if (Auth.isAuthenticated()) window.location.href = 'index.html';
+
+  // Fill demo creds on click
+  document.getElementById('fillEmail').addEventListener('click', () => {
+    document.getElementById('emailInput').value = 'admin@turfballers.com';
+    document.getElementById('passwordInput').value = 'Admin@123';
+  });
+  document.getElementById('fillPass').addEventListener('click', () => {
+    document.getElementById('emailInput').value = 'admin@turfballers.com';
+    document.getElementById('passwordInput').value = 'Admin@123';
+  });
+
+  // Toggle password visibility
+  document.getElementById('togglePass').addEventListener('click', function () {
+    const inp = document.getElementById('passwordInput');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    this.textContent = inp.type === 'password' ? '👁️' : '🙈';
+  });
+
+  // Login form submit
+  document.getElementById('loginForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    const errEl = document.getElementById('loginError');
+    const email = document.getElementById('emailInput').value.trim();
+    const password = document.getElementById('passwordInput').value;
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    document.getElementById('loginBtnText').textContent = 'Signing in…';
+    errEl.classList.remove('show');
+
+    try {
+      const res = await API.auth.login({ email, password });
+      Auth.setToken(res.token);
+      Auth.setUser({ email: res.email, fullName: res.fullName, role: res.role, avatarUrl: res.avatarUrl });
+      Toast.success('Welcome back, ' + res.fullName + '!');
+      setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    } catch (err) {
+      errEl.textContent = err.message || 'Login failed. Please try again.';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('loginBtnText').textContent = 'Sign In';
+    }
+  });
+</script>
+</body>
+</html>
