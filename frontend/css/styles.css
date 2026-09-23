@@ -1,4 +1,4 @@
-﻿/* ============================================================
+/* ============================================================
    Turf-Ballers Design System
    Sports Turf Booking Management System - Dark Neon Theme
    ============================================================ */
@@ -806,3 +806,194 @@ td { padding: 14px 16px; color: var(--text-primary); vertical-align: middle; }
   .stats-grid { grid-template-columns: 1fr; }
   .grid-3 { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   SLOT SCHEDULING GRID & SINGLE TURF STYLES
+   ============================================================ */
+.view-toggle-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.view-toggle-btns {
+  display: flex;
+  background: var(--bg-card);
+  padding: 4px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border);
+}
+
+.view-toggle-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.view-toggle-btn:hover {
+  color: var(--text-primary);
+}
+
+.view-toggle-btn.active {
+  background: var(--accent);
+  color: white;
+  box-shadow: var(--shadow-glow);
+}
+
+.single-turf-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  background: linear-gradient(135deg, rgba(16,185,129,0.1) 0%, rgba(59,130,246,0.05) 100%);
+  border: 1px solid rgba(16,185,129,0.3);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+}
+
+.single-turf-badge {
+  background: var(--accent);
+  color: white;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+}
+
+.slot-grid-card {
+  padding: 20px;
+}
+
+.slot-grid-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.slot-date-nav {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.slot-legend {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  font-size: 13px;
+  color: var(--text-secondary);
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+}
+
+.legend-dot.available { background: var(--success); box-shadow: 0 0 8px rgba(16,185,129,0.5); }
+.legend-dot.booked { background: var(--danger); box-shadow: 0 0 8px rgba(239,68,68,0.5); }
+.legend-dot.pending { background: var(--warning); box-shadow: 0 0 8px rgba(245,158,11,0.5); }
+
+.slots-timeline {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 14px;
+}
+
+.slot-block {
+  border-radius: var(--radius-md);
+  padding: 14px;
+  border: 1px solid var(--border);
+  background: var(--bg-card);
+  transition: var(--transition);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-height: 110px;
+  position: relative;
+  overflow: hidden;
+}
+
+.slot-block.available {
+  border-color: rgba(16,185,129,0.3);
+  background: rgba(16,185,129,0.03);
+  cursor: pointer;
+}
+
+.slot-block.available:hover {
+  border-color: var(--success);
+  background: rgba(16,185,129,0.1);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 14px rgba(16,185,129,0.15);
+}
+
+.slot-block.booked {
+  border-color: rgba(239,68,68,0.3);
+  background: rgba(239,68,68,0.06);
+}
+
+.slot-block.pending {
+  border-color: rgba(245,158,11,0.3);
+  background: rgba(245,158,11,0.06);
+}
+
+.slot-time {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.slot-price-tag {
+  font-size: 11px;
+  font-weight: 600;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: var(--bg-input);
+  color: var(--accent);
+}
+
+.slot-status-info {
+  margin-top: 10px;
+  font-size: 12px;
+}
+
+.slot-member-name {
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.slot-sport-tag {
+  font-size: 11px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+

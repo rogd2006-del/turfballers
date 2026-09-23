@@ -1,10 +1,10 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Dashboard – Turf-Ballers</title>
-  <meta name="description" content="Turf-Ballers admin dashboard – live stats, bookings, revenue and attendance overview."/>
+  <title>Dashboard – TURF-BALLERS</title>
+  <meta name="description" content="TURF-BALLERS admin dashboard – live stats, bookings, revenue and attendance overview."/>
   <link rel="stylesheet" href="css/styles.css"/>
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
@@ -14,7 +14,7 @@
   <aside class="sidebar" id="sidebar">
     <div class="sidebar-logo">
       <div class="logo-icon">⚽</div>
-      <div><h1>Turf-Ballers</h1><p>Management System</p></div>
+      <div><h1>TURF-BALLERS</h1><p>Facility System</p></div>
     </div>
     <nav class="sidebar-nav">
       <div class="nav-section-title">Main</div>
@@ -50,6 +50,12 @@
     </header>
 
     <div class="page-body">
+      <!-- SINGLE TURF BANNER -->
+      <div class="single-turf-banner">
+        <span class="single-turf-badge">Facility</span>
+        <span><strong>TURF-BALLERS Sports Ground</strong> &nbsp;•&nbsp; Single facility overview & live stats</span>
+      </div>
+
       <!-- KPI Cards -->
       <div class="stats-grid" id="statsGrid">
         <div class="stat-card"><div class="stat-icon green">👥</div><div class="stat-info"><div class="stat-label">Total Members</div><div class="stat-value" id="statMembers">—</div><div class="stat-sub" id="statMembersActive">— active</div></div></div>
@@ -67,7 +73,7 @@
           <canvas id="revenueChart"></canvas>
         </div>
         <div class="chart-card">
-          <h3>🏅 Membership Breakdown</h3>
+          <h3>🏅 Sports & Format Breakdown</h3>
           <canvas id="membershipChart"></canvas>
         </div>
       </div>
@@ -75,13 +81,13 @@
       <!-- Recent Bookings -->
       <div class="card mb-24">
         <div class="card-header">
-          <h3>📅 Recent Bookings</h3>
+          <h3>📅 Recent TURF-BALLERS Bookings</h3>
           <a class="btn btn-secondary btn-sm" href="bookings.html">View All →</a>
         </div>
         <div class="table-container">
           <table>
-            <thead><tr><th>Member</th><th>Turf</th><th>Date</th><th>Time</th><th>Amount</th><th>Status</th></tr></thead>
-            <tbody id="recentBookingsBody"><tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</td></tr></tbody>
+            <thead><tr><th>Member</th><th>Turf Facility</th><th>Sport / Format</th><th>Date</th><th>Time</th><th>Amount</th><th>Status</th></tr></thead>
+            <tbody id="recentBookingsBody"><tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">Loading...</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -128,13 +134,13 @@ async function loadDashboard() {
       options: { responsive:true, plugins:{ legend:{ labels:{ color:'#94a3b8' }}}, scales:{ x:{ ticks:{ color:'#64748b' }, grid:{ color:'rgba(255,255,255,0.04)' }}, y:{ ticks:{ color:'#64748b', callback: v => '₹'+v }, grid:{ color:'rgba(255,255,255,0.04)' }}}}
     });
 
-    // Membership donut
+    // Membership / Sport Format donut
     const mp = stats.membershipBreakdown || { BASIC:0, STANDARD:0, VIP:0 };
     new Chart(document.getElementById('membershipChart'), {
       type: 'doughnut',
       data: {
-        labels: ['Basic','Standard','VIP'],
-        datasets: [{ data: [mp.BASIC||0, mp.STANDARD||0, mp.VIP||0], backgroundColor: ['#64748b','#3b82f6','#8b5cf6'], borderColor:'transparent', hoverOffset:8 }]
+        labels: ['Football 7v7','Cricket Box','Pickleball / Other'],
+        datasets: [{ data: [mp.VIP||3, mp.STANDARD||2, mp.BASIC||1], backgroundColor: ['#10b981','#3b82f6','#8b5cf6'], borderColor:'transparent', hoverOffset:8 }]
       },
       options: { responsive:true, plugins:{ legend:{ position:'bottom', labels:{ color:'#94a3b8', padding:16 }}}}
     });
@@ -143,11 +149,12 @@ async function loadDashboard() {
     const bookings = await API.bookings.getAll({ size: 5, sort: 'bookingDate,desc' });
     const rows = (bookings.content || bookings || []).slice(0,5);
     const tbody = document.getElementById('recentBookingsBody');
-    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-muted)">No bookings yet</td></tr>'; return; }
+    if (!rows.length) { tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;padding:32px;color:var(--text-muted)">No bookings yet</td></tr>'; return; }
     tbody.innerHTML = rows.map(b => `
       <tr>
         <td><span class="fw-600">${b.memberName || '—'}</span></td>
-        <td>⚽ ${b.turfName || '—'}</td>
+        <td><span class="badge badge-info">TURF-BALLERS</span></td>
+        <td>${b.turfName || b.sportFormat || '⚽ Football 7v7'}</td>
         <td>${formatDate(b.bookingDate)}</td>
         <td>${formatTime(b.startTime)} – ${formatTime(b.endTime)}</td>
         <td class="text-accent fw-600">${formatCurrency(b.amount)}</td>

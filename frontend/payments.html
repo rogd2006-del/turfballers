@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
@@ -126,27 +126,12 @@ async function loadMembers() {
     const sel = document.getElementById('pMember');
     sel.innerHTML = '<option value="">Select member…</option>' +
       allMembers.map(m => `<option value="${m.id}">${m.fullName}</option>`).join('');
-  } catch(e) {}
+  } catch(e) { console.error('Error loading members', e); }
 }
-
-document.getElementById('pMember').addEventListener('change', async function() {
-  const memberId = this.value;
-  const bSel = document.getElementById('pBooking');
-  bSel.innerHTML = '<option value="">No linked booking</option>';
-  if (!memberId) return;
-  try {
-    const payments = await API.payments.getByMember(memberId);
-    // We can also load bookings for this member from bookings API
-    const data = await API.bookings.getAll({ memberId, status: 'CONFIRMED', size: 50 });
-    const bookings = data.content || data || [];
-    bSel.innerHTML = '<option value="">No linked booking</option>' +
-      bookings.map(b => `<option value="${b.id}">${b.turfName} – ${b.bookingDate} ${formatTime(b.startTime)}</option>`).join('');
-  } catch(e) {}
-});
 
 async function loadPayments() {
   try {
-    const data = await API.payments.getAll();
+    const data = await API.payments.getAll({ size: 500, sort: 'createdAt,desc' });
     allPayments = data.content || data || [];
 
     const search = document.getElementById('searchInput').value.toLowerCase();
@@ -184,6 +169,24 @@ async function loadPayments() {
     }
   } catch(e) { Toast.error('Failed to load payments: ' + e.message); }
 }
+
+document.getElementById('pMember').addEventListener('change', async (e) => {
+  const memberId = e.target.value;
+  const bSelect = document.getElementById('pBooking');
+  if (!memberId) {
+    bSelect.innerHTML = '<option value="">No linked booking</option>';
+    return;
+  }
+  try {
+    const res = await API.bookings.getAll({ memberId: memberId, size: 50 });
+    const bks = res.content || res || [];
+    bSelect.innerHTML = '<option value="">No linked booking</option>' + 
+      bks.map(b => `<option value="${b.id}">${formatDate(b.date)} - ${b.startTime}</option>`).join('');
+  } catch (err) {
+    console.error(err);
+    bSelect.innerHTML = '<option value="">No linked booking</option>';
+  }
+});
 
 document.getElementById('addPaymentBtn').addEventListener('click', () => {
   document.getElementById('paymentForm').reset();

@@ -1,16 +1,16 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Bookings – Turf-Ballers</title>
-  <meta name="description" content="Manage turf bookings – create, view and cancel slot bookings with double-booking prevention."/>
+  <title>Bookings – TURF-BALLERS</title>
+  <meta name="description" content="Manage single-turf bookings – slot scheduling, pricing and conflict prevention for TURF-BALLERS."/>
   <link rel="stylesheet" href="css/styles.css"/>
 </head>
 <body>
 <div class="app-layout">
   <aside class="sidebar" id="sidebar">
-    <div class="sidebar-logo"><div class="logo-icon">⚽</div><div><h1>Turf-Ballers</h1><p>Management System</p></div></div>
+    <div class="sidebar-logo"><div class="logo-icon">⚽</div><div><h1>TURF-BALLERS</h1><p>Facility Management</p></div></div>
     <nav class="sidebar-nav">
       <div class="nav-section-title">Main</div>
       <a class="nav-item" href="index.html"><span class="nav-icon">📊</span> Dashboard</a>
@@ -27,7 +27,10 @@
 
   <main class="main-content">
     <header class="topbar">
-      <div class="topbar-left"><h2>Bookings</h2><p id="bookingCount">Loading...</p></div>
+      <div class="topbar-left">
+        <h2>Turf Bookings</h2>
+        <p id="bookingCount">TURF-BALLERS Single Facility</p>
+      </div>
       <div class="topbar-right">
         <button class="btn btn-primary" id="addBookingBtn">➕ New Booking</button>
         <button class="btn btn-icon btn-secondary" id="menuToggle">☰</button>
@@ -35,26 +38,65 @@
     </header>
 
     <div class="page-body">
-      <div class="table-toolbar">
-        <div class="input-group"><span class="input-icon">🔍</span><input class="form-control" type="text" id="searchInput" placeholder="Search member or turf…"/></div>
-        <div class="filter-group">
-          <input class="form-control" type="date" id="dateFilter" style="min-width:160px"/>
-          <select class="form-control" id="statusFilter" style="min-width:140px">
-            <option value="">All Status</option>
-            <option value="CONFIRMED">Confirmed</option>
-            <option value="PENDING">Pending</option>
-            <option value="CANCELLED">Cancelled</option>
-          </select>
+      <!-- SINGLE TURF BANNER -->
+      <div class="single-turf-banner">
+        <span class="single-turf-badge">Single Turf</span>
+        <span><strong>TURF-BALLERS Ground</strong> &nbsp;•&nbsp; All slot bookings & timetables belong exclusively to this facility.</span>
+      </div>
+
+      <!-- VIEW TOGGLE BAR -->
+      <div class="view-toggle-bar">
+        <div class="view-toggle-btns">
+          <button class="view-toggle-btn active" id="viewTableBtn">📋 Table View</button>
+          <button class="view-toggle-btn" id="viewGridBtn">🕒 Daily Slot Grid</button>
         </div>
       </div>
 
-      <div class="table-container card">
-        <table>
-          <thead><tr><th>#</th><th>Member</th><th>Turf</th><th>Date</th><th>Time Slot</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
-          <tbody id="bookingsBody"><tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">Loading…</td></tr></tbody>
-        </table>
+      <!-- TABLE VIEW CONTENT -->
+      <div id="tableViewSection">
+        <div class="table-toolbar">
+          <div class="input-group"><span class="input-icon">🔍</span><input class="form-control" type="text" id="searchInput" placeholder="Search member or format…"/></div>
+          <div class="filter-group">
+            <input class="form-control" type="date" id="dateFilter" style="min-width:160px"/>
+            <select class="form-control" id="statusFilter" style="min-width:140px">
+              <option value="">All Status</option>
+              <option value="CONFIRMED">Confirmed</option>
+              <option value="PENDING">Pending</option>
+              <option value="CANCELLED">Cancelled</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="table-container card">
+          <table>
+            <thead><tr><th>#</th><th>Member</th><th>Turf Facility</th><th>Sport / Format</th><th>Date</th><th>Time Slot</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody id="bookingsBody"><tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">Loading…</td></tr></tbody>
+          </table>
+        </div>
+        <div class="pagination" id="pagination"></div>
       </div>
-      <div class="pagination" id="pagination"></div>
+
+      <!-- SLOT GRID VIEW CONTENT -->
+      <div id="gridViewSection" class="hidden">
+        <div class="card slot-grid-card">
+          <div class="slot-grid-header">
+            <div class="slot-date-nav">
+              <button class="btn btn-secondary btn-sm" id="prevDayBtn">◀ Prev Day</button>
+              <input class="form-control" type="date" id="gridDatePicker" style="width:160px"/>
+              <button class="btn btn-secondary btn-sm" id="nextDayBtn">Next Day ▶</button>
+              <button class="btn btn-secondary btn-sm" id="todayBtn">Today</button>
+            </div>
+            <div class="slot-legend">
+              <div class="legend-item"><span class="legend-dot available"></span> Available</div>
+              <div class="legend-item"><span class="legend-dot booked"></span> Booked</div>
+              <div class="legend-item"><span class="legend-dot pending"></span> Pending</div>
+            </div>
+          </div>
+          <div class="slots-timeline" id="slotsTimelineContainer">
+            <!-- Rendered by JS -->
+          </div>
+        </div>
+      </div>
     </div>
   </main>
 </div>
@@ -69,18 +111,23 @@
     <div class="modal-body">
       <form id="bookingForm">
         <input type="hidden" id="bookingId"/>
-        <div class="form-group"><label class="form-label">Member *</label>
-          <select class="form-control" id="bMember" required><option value="">Select member…</option></select>
+        <div class="grid-2">
+          <div class="form-group">
+            <label class="form-label">Facility Turf</label>
+            <input class="form-control" type="text" id="bTurf" value="TURF-BALLERS" readonly style="background:var(--bg-input); font-weight:600; color:var(--accent);"/>
+          </div>
+          <div class="form-group"><label class="form-label">Member *</label>
+            <select class="form-control" id="bMember" required><option value="">Select member…</option></select>
+          </div>
         </div>
         <div class="grid-2">
-          <div class="form-group"><label class="form-label">Turf / Facility *</label>
-            <select class="form-control" id="bTurf" required>
-              <option value="">Select turf…</option>
-              <option value="Football 7v7">⚽ Football 7v7</option>
-              <option value="Football 5v5">⚽ Football 5v5</option>
-              <option value="Cricket Box">🏏 Cricket Box</option>
-              <option value="Pickleball Court">🏸 Pickleball Court</option>
-              <option value="Basketball Court">🏀 Basketball Court</option>
+          <div class="form-group"><label class="form-label">Sport / Format *</label>
+            <select class="form-control" id="bSport" required>
+              <option value="⚽ Football 7v7">⚽ Football 7v7</option>
+              <option value="⚽ Football 5v5">⚽ Football 5v5</option>
+              <option value="🏏 Box Cricket">🏏 Box Cricket</option>
+              <option value="🎾 Pickleball">🎾 Pickleball</option>
+              <option value="🏃 Fitness & Training">🏃 Fitness & Training</option>
             </select>
           </div>
           <div class="form-group"><label class="form-label">Booking Date *</label>
@@ -92,7 +139,10 @@
           <div class="form-group"><label class="form-label">End Time *</label><input class="form-control" type="time" id="bEnd" required/></div>
         </div>
         <div class="grid-2">
-          <div class="form-group"><label class="form-label">Amount (₹) *</label><input class="form-control" type="number" id="bAmount" required min="0" placeholder="800"/></div>
+          <div class="form-group">
+            <label class="form-label">Amount (₹) *</label>
+            <input class="form-control" type="number" id="bAmount" required min="0" placeholder="Auto-calculated rate"/>
+          </div>
           <div class="form-group"><label class="form-label">Status</label>
             <select class="form-control" id="bStatus">
               <option value="CONFIRMED">Confirmed</option>
@@ -110,11 +160,11 @@
   </div>
 </div>
 
-<!-- CANCEL CONFIRM -->
+<!-- CANCEL CONFIRM MODAL -->
 <div class="modal-overlay" id="cancelModal">
   <div class="modal" style="max-width:380px">
     <div class="modal-header"><h3>Cancel Booking</h3><button class="modal-close" onclick="closeModal('cancelModal')">✕</button></div>
-    <div class="modal-body"><p>Cancel this booking for <strong id="cancelLabel"></strong>?</p></div>
+    <div class="modal-body"><p>Cancel this booking for <strong id="cancelLabel"></strong> on TURF-BALLERS?</p></div>
     <div class="modal-footer">
       <button class="btn btn-secondary" onclick="closeModal('cancelModal')">No</button>
       <button class="btn btn-danger" id="confirmCancelBtn">Yes, Cancel</button>
@@ -129,6 +179,8 @@ initSidebar();
 
 let currentPage = 0, totalPages = 0, cancelId = null;
 let allMembers = [];
+let activeView = 'table'; // 'table' or 'grid'
+let selectedGridDate = new Date().toISOString().split('T')[0];
 
 async function loadMembers() {
   try {
@@ -139,6 +191,34 @@ async function loadMembers() {
       allMembers.map(m => `<option value="${m.id}">${m.fullName} (${m.phone || m.email})</option>`).join('');
   } catch(e) {}
 }
+
+/** Calculate Hourly Rate based on timing & weekend */
+function autoCalculateAmount() {
+  const dateVal = document.getElementById('bDate').value;
+  const startVal = document.getElementById('bStart').value;
+  const endVal = document.getElementById('bEnd').value;
+  if (!dateVal || !startVal || !endVal) return;
+
+  const dateObj = new Date(dateVal);
+  const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+
+  const [sh, sm] = startVal.split(':').map(Number);
+  const [eh, em] = endVal.split(':').map(Number);
+  const durationHours = Math.max(0.5, (eh * 60 + em - (sh * 60 + sm)) / 60);
+
+  let hourlyRate = 800; // daytime default
+  if (isWeekend) {
+    hourlyRate = 1400; // weekend rate
+  } else if (sh >= 17 || eh > 17) {
+    hourlyRate = 1200; // peak evening floodlight rate
+  }
+
+  document.getElementById('bAmount').value = Math.round(durationHours * hourlyRate);
+}
+
+document.getElementById('bDate').addEventListener('change', autoCalculateAmount);
+document.getElementById('bStart').addEventListener('change', autoCalculateAmount);
+document.getElementById('bEnd').addEventListener('change', autoCalculateAmount);
 
 async function loadBookings() {
   const search = document.getElementById('searchInput').value.trim();
@@ -157,13 +237,14 @@ async function loadBookings() {
 
     const tbody = document.getElementById('bookingsBody');
     if (!bookings.length) {
-      tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;padding:40px;color:var(--text-muted)">No bookings found</td></tr>';
+      tbody.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:40px;color:var(--text-muted)">No bookings found</td></tr>';
     } else {
       tbody.innerHTML = bookings.map((b, i) => `
         <tr>
           <td class="text-muted">${currentPage * 10 + i + 1}</td>
           <td><span class="fw-600">${b.memberName || '—'}</span></td>
-          <td>⚽ ${b.turfName || '—'}</td>
+          <td><span class="badge badge-info">TURF-BALLERS</span></td>
+          <td>${b.turfName || b.sportFormat || '⚽ Football 7v7'}</td>
           <td>${formatDate(b.bookingDate)}</td>
           <td class="text-muted">${formatTime(b.startTime)} – ${formatTime(b.endTime)}</td>
           <td class="text-accent fw-600">${formatCurrency(b.amount)}</td>
@@ -179,11 +260,134 @@ async function loadBookings() {
   } catch(e) { Toast.error('Failed to load bookings: ' + e.message); }
 }
 
+async function renderSlotGrid() {
+  document.getElementById('gridDatePicker').value = selectedGridDate;
+  const container = document.getElementById('slotsTimelineContainer');
+  container.innerHTML = '<div style="grid-column:1/-1; text-align:center; padding:30px;">Loading TURF-BALLERS timetable…</div>';
+
+  try {
+    // Fetch bookings for this date
+    const res = await API.bookings.getAll({ date: selectedGridDate, size: 100 });
+    const dayBookings = (res.content || res || []).filter(b => b.status !== 'CANCELLED');
+
+    const hours = [];
+    for (let h = 6; h < 24; h++) {
+      const startStr = (h < 10 ? '0' : '') + h + ':00';
+      const endStr = ((h + 1) < 10 ? '0' : '') + (h + 1) + ':00';
+
+      // Check if booked
+      const booking = dayBookings.find(b => {
+        return (startStr < b.endTime && endStr > b.startTime);
+      });
+
+      hours.push({
+        hour: h,
+        startStr,
+        endStr,
+        booking: booking || null
+      });
+    }
+
+    container.innerHTML = hours.map(h => {
+      if (h.booking) {
+        const isPending = h.booking.status === 'PENDING';
+        return `
+          <div class="slot-block ${isPending ? 'pending' : 'booked'}">
+            <div class="slot-time">
+              <span>${formatTime(h.startStr)}</span>
+              <span class="slot-price-tag" style="color:var(--text-secondary)">${h.booking.status}</span>
+            </div>
+            <div class="slot-status-info">
+              <div class="slot-member-name">👤 ${h.booking.memberName}</div>
+              <div class="slot-sport-tag">${h.booking.turfName || 'TURF-BALLERS'}</div>
+            </div>
+          </div>
+        `;
+      } else {
+        const dateObj = new Date(selectedGridDate);
+        const isWeekend = dateObj.getDay() === 0 || dateObj.getDay() === 6;
+        const rate = isWeekend ? 1400 : (h.hour >= 17 ? 1200 : 800);
+
+        return `
+          <div class="slot-block available" onclick="quickBookSlot('${selectedGridDate}', '${h.startStr}', '${h.endStr}')">
+            <div class="slot-time">
+              <span>${formatTime(h.startStr)}</span>
+              <span class="slot-price-tag">₹${rate}/hr</span>
+            </div>
+            <div class="slot-status-info">
+              <div style="color:var(--success); font-weight:600;">+ Book Slot</div>
+              <div class="slot-sport-tag">TURF-BALLERS</div>
+            </div>
+          </div>
+        `;
+      }
+    }).join('');
+  } catch(e) {
+    container.innerHTML = `<div style="grid-column:1/-1; text-align:center; padding:30px; color:var(--danger)">Error loading timetable: ${e.message}</div>`;
+  }
+}
+
+function quickBookSlot(date, start, end) {
+  document.getElementById('modalTitle').textContent = 'New Slot Booking';
+  document.getElementById('bookingForm').reset();
+  document.getElementById('bookingId').value = '';
+  document.getElementById('bTurf').value = 'TURF-BALLERS';
+  document.getElementById('bDate').value = date;
+  document.getElementById('bStart').value = start;
+  document.getElementById('bEnd').value = end;
+  autoCalculateAmount();
+  openModal('bookingModal');
+}
+
+// View toggle switching
+document.getElementById('viewTableBtn').addEventListener('click', () => {
+  activeView = 'table';
+  document.getElementById('viewTableBtn').classList.add('active');
+  document.getElementById('viewGridBtn').classList.remove('active');
+  document.getElementById('tableViewSection').classList.remove('hidden');
+  document.getElementById('gridViewSection').classList.add('hidden');
+});
+
+document.getElementById('viewGridBtn').addEventListener('click', () => {
+  activeView = 'grid';
+  document.getElementById('viewGridBtn').classList.add('active');
+  document.getElementById('viewTableBtn').classList.remove('active');
+  document.getElementById('gridViewSection').classList.remove('hidden');
+  document.getElementById('tableViewSection').classList.add('hidden');
+  renderSlotGrid();
+});
+
+// Slot Grid Date Controls
+document.getElementById('gridDatePicker').addEventListener('change', (e) => {
+  selectedGridDate = e.target.value;
+  renderSlotGrid();
+});
+document.getElementById('prevDayBtn').addEventListener('click', () => {
+  const d = new Date(selectedGridDate);
+  d.setDate(d.getDate() - 1);
+  selectedGridDate = d.toISOString().split('T')[0];
+  renderSlotGrid();
+});
+document.getElementById('nextDayBtn').addEventListener('click', () => {
+  const d = new Date(selectedGridDate);
+  d.setDate(d.getDate() + 1);
+  selectedGridDate = d.toISOString().split('T')[0];
+  renderSlotGrid();
+});
+document.getElementById('todayBtn').addEventListener('click', () => {
+  selectedGridDate = new Date().toISOString().split('T')[0];
+  renderSlotGrid();
+});
+
 document.getElementById('addBookingBtn').addEventListener('click', () => {
   document.getElementById('modalTitle').textContent = 'New Booking';
   document.getElementById('bookingForm').reset();
   document.getElementById('bookingId').value = '';
+  document.getElementById('bTurf').value = 'TURF-BALLERS';
   document.getElementById('bDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('bStart').value = '17:00';
+  document.getElementById('bEnd').value = '18:00';
+  autoCalculateAmount();
   openModal('bookingModal');
 });
 
@@ -191,7 +395,8 @@ document.getElementById('saveBookingBtn').addEventListener('click', async () => 
   const id = document.getElementById('bookingId').value;
   const payload = {
     memberId:    document.getElementById('bMember').value,
-    turfName:    document.getElementById('bTurf').value,
+    turfName:    document.getElementById('bSport').value, // Sport format e.g. Football 7v7
+    facilityName:'TURF-BALLERS',
     bookingDate: document.getElementById('bDate').value,
     startTime:   document.getElementById('bStart').value,
     endTime:     document.getElementById('bEnd').value,
@@ -199,14 +404,15 @@ document.getElementById('saveBookingBtn').addEventListener('click', async () => 
     status:      document.getElementById('bStatus').value,
     notes:       document.getElementById('bNotes').value.trim(),
   };
-  if (!payload.memberId || !payload.turfName || !payload.bookingDate || !payload.startTime || !payload.endTime) {
+  if (!payload.memberId || !payload.bookingDate || !payload.startTime || !payload.endTime) {
     Toast.warning('Please fill all required fields.'); return;
   }
   try {
     if (id) { await API.bookings.update(id, payload); Toast.success('Booking updated!'); }
-    else    { await API.bookings.create(payload);      Toast.success('Booking created!'); }
+    else    { await API.bookings.create(payload);      Toast.success('Booking created for TURF-BALLERS!'); }
     closeModal('bookingModal');
-    loadBookings();
+    if (activeView === 'grid') renderSlotGrid();
+    else loadBookings();
   } catch(e) { Toast.error(e.message); }
 });
 
@@ -220,7 +426,8 @@ document.getElementById('confirmCancelBtn').addEventListener('click', async () =
     await API.bookings.cancel(cancelId);
     Toast.success('Booking cancelled.');
     closeModal('cancelModal');
-    loadBookings();
+    if (activeView === 'grid') renderSlotGrid();
+    else loadBookings();
   } catch(e) { Toast.error(e.message); }
 });
 
