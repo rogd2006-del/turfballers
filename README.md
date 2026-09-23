@@ -1,4 +1,4 @@
-﻿# ⚽ Turf-Ballers
+# ⚽ Turf-Ballers
 
 > **Production-ready Sports Turf Booking & Management System**
 
@@ -13,9 +13,9 @@ A full-stack web application for managing sports turf bookings, members, payment
 | Layer | URL |
 |---|---|
 | 🌐 Frontend | [turfballers1.vercel.app](https://turfballers1.vercel.app) |
-| ⚙️ Backend API | Render (see deployment section) |
+| ⚙️ Backend API | [turfballers-api-v2.onrender.com](https://turfballers-api-v2.onrender.com) |
 
-**Demo Login:** `admin@turfballers.com` / `Admin@123`
+**Authentication:** Register a new account or Sign In directly on the website. Default seeded admin credentials: `admin@turfballers.com` / `Admin@123`
 
 ---
 
