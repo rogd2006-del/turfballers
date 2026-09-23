@@ -7,7 +7,7 @@
 // ---- Configuration ----
 const API_BASE_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
   ? 'http://localhost:8080/api'
-  : 'https://turfballers-api.onrender.com/api';
+  : 'https://turfballers-api-v2.onrender.com/api';
 
 // ---- Token Management ----
 const Auth = {
