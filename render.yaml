@@ -1,9 +1,8 @@
 services:
   - type: web
     name: turfballers-api
-    env: java
-    buildCommand: "cd backend && mvn clean package -DskipTests"
-    startCommand: "java -jar backend/target/*.jar"
+    env: docker
+    dockerfilePath: ./backend/Dockerfile
     envVars:
       - key: DB_URL
         sync: false
