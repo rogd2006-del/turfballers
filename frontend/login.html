@@ -27,42 +27,95 @@
       </div>
     </div>
 
-    <!-- Right login form -->
+    <!-- Right login/signup form -->
     <div class="login-right">
       <div class="login-card">
-        <h2>Welcome back 👋</h2>
-        <p class="subtitle">Sign in to access your admin dashboard</p>
-
-        <div class="demo-creds">
-          <div class="label">🔑 Demo Credentials (Click to fill)</div>
-          <div>Email: <span id="fillEmail">admin@turfballers.com</span></div>
-          <div>Password: <span id="fillPass">Admin@123</span></div>
+        <!-- Auth Tabs -->
+        <div class="auth-tabs" id="authTabs">
+          <button class="auth-tab active" data-tab="login" id="loginTab">Sign In</button>
+          <button class="auth-tab" data-tab="signup" id="signupTab">Sign Up</button>
         </div>
 
-        <div class="login-error" id="loginError"></div>
+        <!-- LOGIN FORM -->
+        <div id="loginPanel">
+          <h2>Welcome back 👋</h2>
+          <p class="subtitle">Sign in to access your admin dashboard</p>
 
-        <form id="loginForm">
-          <div class="form-group">
-            <label class="form-label" for="emailInput">Email Address</label>
-            <div class="input-group">
-              <span class="input-icon">📧</span>
-              <input class="form-control" type="email" id="emailInput"
-                     placeholder="admin@turfballers.com" required autocomplete="email"/>
-            </div>
-          </div>
-          <div class="form-group">
-            <label class="form-label" for="passwordInput">Password</label>
-            <div class="password-input">
-              <input class="form-control" type="password" id="passwordInput"
-                     placeholder="Enter your password" required autocomplete="current-password"/>
-              <button type="button" class="password-toggle" id="togglePass">👁️</button>
-            </div>
-          </div>
+          <div class="login-error" id="loginError"></div>
 
-          <button type="submit" class="login-btn" id="loginBtn">
-            <span id="loginBtnText">Sign In</span>
-          </button>
-        </form>
+          <form id="loginForm">
+            <div class="form-group">
+              <label class="form-label" for="emailInput">Email Address</label>
+              <div class="input-group">
+                <span class="input-icon">📧</span>
+                <input class="form-control" type="email" id="emailInput"
+                       placeholder="you@example.com" required autocomplete="email"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="passwordInput">Password</label>
+              <div class="password-input">
+                <input class="form-control" type="password" id="passwordInput"
+                       placeholder="Enter your password" required autocomplete="current-password"/>
+                <button type="button" class="password-toggle" id="togglePass">👁️</button>
+              </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="loginBtn">
+              <span id="loginBtnText">Sign In</span>
+            </button>
+          </form>
+
+          <p class="auth-switch">Don't have an account? <a href="#" id="goToSignup">Create one</a></p>
+        </div>
+
+        <!-- SIGNUP FORM -->
+        <div id="signupPanel" style="display:none;">
+          <h2>Create Account ✨</h2>
+          <p class="subtitle">Register as a new admin to get started</p>
+
+          <div class="login-error" id="signupError"></div>
+
+          <form id="signupForm">
+            <div class="form-group">
+              <label class="form-label" for="signupName">Full Name</label>
+              <div class="input-group">
+                <span class="input-icon">👤</span>
+                <input class="form-control" type="text" id="signupName"
+                       placeholder="John Doe" required autocomplete="name"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signupEmail">Email Address</label>
+              <div class="input-group">
+                <span class="input-icon">📧</span>
+                <input class="form-control" type="email" id="signupEmail"
+                       placeholder="you@example.com" required autocomplete="email"/>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signupPassword">Password</label>
+              <div class="password-input">
+                <input class="form-control" type="password" id="signupPassword"
+                       placeholder="Min 6 characters" required minlength="6" autocomplete="new-password"/>
+                <button type="button" class="password-toggle" id="toggleSignupPass">👁️</button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="signupConfirm">Confirm Password</label>
+              <div class="password-input">
+                <input class="form-control" type="password" id="signupConfirm"
+                       placeholder="Re-enter password" required minlength="6" autocomplete="new-password"/>
+              </div>
+            </div>
+
+            <button type="submit" class="login-btn" id="signupBtn">
+              <span id="signupBtnText">Create Account</span>
+            </button>
+          </form>
+
+          <p class="auth-switch">Already have an account? <a href="#" id="goToLogin">Sign in</a></p>
+        </div>
 
         <p class="mt-16 text-muted text-sm" style="text-align:center">
           Turf-Ballers v1.0 &nbsp;|&nbsp; Sports Management Platform
@@ -77,15 +130,25 @@
   // Redirect if already logged in
   if (Auth.isAuthenticated()) window.location.href = 'index.html';
 
-  // Fill demo creds on click
-  document.getElementById('fillEmail').addEventListener('click', () => {
-    document.getElementById('emailInput').value = 'admin@turfballers.com';
-    document.getElementById('passwordInput').value = 'Admin@123';
-  });
-  document.getElementById('fillPass').addEventListener('click', () => {
-    document.getElementById('emailInput').value = 'admin@turfballers.com';
-    document.getElementById('passwordInput').value = 'Admin@123';
-  });
+  // ---- Tab Switching ----
+  function showTab(tab) {
+    if (tab === 'login') {
+      document.getElementById('loginPanel').style.display = 'block';
+      document.getElementById('signupPanel').style.display = 'none';
+      document.getElementById('loginTab').classList.add('active');
+      document.getElementById('signupTab').classList.remove('active');
+    } else {
+      document.getElementById('loginPanel').style.display = 'none';
+      document.getElementById('signupPanel').style.display = 'block';
+      document.getElementById('loginTab').classList.remove('active');
+      document.getElementById('signupTab').classList.add('active');
+    }
+  }
+
+  document.getElementById('loginTab').addEventListener('click', () => showTab('login'));
+  document.getElementById('signupTab').addEventListener('click', () => showTab('signup'));
+  document.getElementById('goToSignup').addEventListener('click', (e) => { e.preventDefault(); showTab('signup'); });
+  document.getElementById('goToLogin').addEventListener('click', (e) => { e.preventDefault(); showTab('login'); });
 
   // Toggle password visibility
   document.getElementById('togglePass').addEventListener('click', function () {
@@ -93,8 +156,13 @@
     inp.type = inp.type === 'password' ? 'text' : 'password';
     this.textContent = inp.type === 'password' ? '👁️' : '🙈';
   });
+  document.getElementById('toggleSignupPass').addEventListener('click', function () {
+    const inp = document.getElementById('signupPassword');
+    inp.type = inp.type === 'password' ? 'text' : 'password';
+    this.textContent = inp.type === 'password' ? '👁️' : '🙈';
+  });
 
-  // Login form submit
+  // ---- Login Form ----
   document.getElementById('loginForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
@@ -119,6 +187,48 @@
       btn.disabled = false;
       btn.classList.remove('loading');
       document.getElementById('loginBtnText').textContent = 'Sign In';
+    }
+  });
+
+  // ---- Sign Up Form ----
+  document.getElementById('signupForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('signupBtn');
+    const errEl = document.getElementById('signupError');
+    const fullName = document.getElementById('signupName').value.trim();
+    const email = document.getElementById('signupEmail').value.trim();
+    const password = document.getElementById('signupPassword').value;
+    const confirm = document.getElementById('signupConfirm').value;
+
+    errEl.classList.remove('show');
+
+    if (password !== confirm) {
+      errEl.textContent = 'Passwords do not match.';
+      errEl.classList.add('show');
+      return;
+    }
+    if (password.length < 6) {
+      errEl.textContent = 'Password must be at least 6 characters.';
+      errEl.classList.add('show');
+      return;
+    }
+
+    btn.disabled = true;
+    btn.classList.add('loading');
+    document.getElementById('signupBtnText').textContent = 'Creating account…';
+
+    try {
+      const res = await API.auth.register({ email, password, fullName });
+      Auth.setToken(res.token);
+      Auth.setUser({ email: res.email, fullName: res.fullName, role: res.role, avatarUrl: res.avatarUrl });
+      Toast.success('Account created! Welcome, ' + res.fullName + '!');
+      setTimeout(() => { window.location.href = 'index.html'; }, 600);
+    } catch (err) {
+      errEl.textContent = err.message || 'Registration failed. Please try again.';
+      errEl.classList.add('show');
+      btn.disabled = false;
+      btn.classList.remove('loading');
+      document.getElementById('signupBtnText').textContent = 'Create Account';
     }
   });
 </script>

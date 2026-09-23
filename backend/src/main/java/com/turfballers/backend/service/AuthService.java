@@ -35,15 +35,17 @@ public class AuthService {
         return buildResponse(token, user, "Login successful");
     }
 
-    /** Register a new admin (restricted - typically seeded) */
-    public AuthResponse register(LoginRequest request) {
+    /** Register a new admin */
+    public AuthResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered: " + request.getEmail());
         }
+        String name = (request.getFullName() != null && !request.getFullName().isBlank())
+            ? request.getFullName() : "Administrator";
         User user = User.builder()
             .email(request.getEmail())
             .password(passwordEncoder.encode(request.getPassword()))
-            .fullName("Administrator")
+            .fullName(name)
             .role("ADMIN")
             .build();
         userRepository.save(user);

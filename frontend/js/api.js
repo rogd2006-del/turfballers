@@ -110,28 +110,52 @@ const MockStore = {
       const password = body?.password || '';
       const user = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
       if (!user || user.password !== password) {
-        if (email === 'admin@turfballers.com') {
-          // Allow demo login
-        } else {
-          throw new ApiError('Invalid email or password', 400);
-        }
+        throw new ApiError('Invalid email or password', 401);
       }
       return {
-        token: 'demo-jwt-token-' + Date.now(),
-        email: user?.email || email,
-        fullName: user?.fullName || 'Turf Admin',
-        role: user?.role || 'ADMIN',
-        avatarUrl: null
+        token: 'jwt-token-' + Date.now(),
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role || 'ADMIN',
+        avatarUrl: user.avatarUrl || null,
+        message: 'Login successful'
+      };
+    }
+
+    // Auth: /auth/register
+    if (pathOnly === '/auth/register' && method === 'POST') {
+      const email = body?.email || '';
+      const password = body?.password || '';
+      const fullName = body?.fullName || 'Administrator';
+      if (!email || !password) {
+        throw new ApiError('Email and password are required', 400);
+      }
+      const existing = db.users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      if (existing) {
+        throw new ApiError('Email already registered: ' + email, 400);
+      }
+      const newUser = { email, password, fullName, role: 'ADMIN', phone: '', avatarUrl: null };
+      db.users.push(newUser);
+      this.saveDB(db);
+      return {
+        token: 'jwt-token-' + Date.now(),
+        email: newUser.email,
+        fullName: newUser.fullName,
+        role: newUser.role,
+        avatarUrl: null,
+        message: 'Registration successful'
       };
     }
 
     // Auth profile
     if (pathOnly === '/auth/profile') {
+      const currentUser = Auth.getUser();
+      const user = db.users.find(u => u.email.toLowerCase() === (currentUser?.email || '').toLowerCase());
       return {
-        email: 'admin@turfballers.com',
-        fullName: 'Turf Admin',
-        role: 'ADMIN',
-        phone: '+91-9876543210'
+        email: user?.email || currentUser?.email || '',
+        fullName: user?.fullName || currentUser?.fullName || 'Admin',
+        role: user?.role || 'ADMIN',
+        phone: user?.phone || ''
       };
     }
 
