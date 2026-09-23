@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: turfballers-api
+    env: java
+    buildCommand: "cd backend && mvn clean package -DskipTests"
+    startCommand: "java -jar backend/target/*.jar"
+    envVars:
+      - key: DB_URL
+        sync: false
+      - key: DB_USERNAME
+        sync: false
+      - key: DB_PASSWORD
+        sync: false
+      - key: JWT_SECRET
+        sync: false
