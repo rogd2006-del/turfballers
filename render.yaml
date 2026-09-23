@@ -2,7 +2,7 @@ services:
   - type: web
     name: turfballers-api
     env: docker
-    dockerfilePath: ./backend/Dockerfile
+    rootDir: backend
     envVars:
       - key: DB_URL
         sync: false
